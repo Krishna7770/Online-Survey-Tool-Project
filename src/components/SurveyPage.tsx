@@ -1,5 +1,7 @@
 import React from 'react';
 import QuestionField from './QuestionField'
+import RadarPageSummary from './RadarPageSummary'
+
 
 //creating interfaces to make proper structure which helps with autocompletion
 
@@ -49,7 +51,12 @@ const SurveyPage: React.FC<Props> = ({ page }) => {
           </ul>
         </div>
       ))}
+      <div style={{ marginTop: '30px', borderTop: '2px solid #ccc', paddingTop: '10px' }}>
+      <h3>Live Summary</h3>
+      <RadarPageSummary categories={page.categories} />
     </div>
+    </div>
+    
   );
 };
 
