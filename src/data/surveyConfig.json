@@ -1,0 +1,85 @@
+{
+  "surveyId": "demo-survey-v1",
+  "title": "Digital Readiness Check",
+  "pages": [
+    {
+      "pageId": "strategy",
+      "title": "Strategy & Leadership",
+      "introText": "Answer honestly. Your score updates live.",
+      "categories": [
+        {
+          "categoryId": "vision",
+          "title": "Vision & Direction",
+          "questions": [
+            {
+              "questionId": "q1",
+              "label": "We have a clear digital strategy.",
+              "type": "slider",
+              "min": 1,
+              "max": 5,
+              "step": 1,
+              "scoringGroup": "vision"
+            },
+            {
+              "questionId": "q2",
+              "label": "Who is mainly responsible for digital development?",
+              "type": "dropdown",
+              "options": [
+                { "value": 1, "text": "No one / unclear" },
+                { "value": 3, "text": "Some team sometimes" },
+                { "value": 5, "text": "Dedicated leader" }
+              ],
+              "scoringGroup": "vision"
+            },
+            {
+              "questionId": "q3",
+              "label": "Main digital priority for next 12 months?",
+              "type": "text",
+              "placeholder": "Example: automate reporting...",
+              "scoringGroup": null
+            }
+          ]
+        },
+        {
+          "categoryId": "culture",
+          "title": "People & Culture",
+          "questions": [
+            {
+              "questionId": "q4",
+              "label": "We actively train people in digital skills.",
+              "type": "radio",
+              "options": [
+                { "value": 1, "text": "No" },
+                { "value": 3, "text": "Sometimes" },
+                { "value": 5, "text": "Yes, regularly" }
+              ],
+              "scoringGroup": "culture"
+            },
+            {
+              "questionId": "q5",
+              "label": "When was the last training?",
+              "type": "date",
+              "scoringGroup": null
+            },
+            {
+              "questionId": "q6",
+              "label": "Current skill vs Needed skill",
+              "type": "xy",
+              "xLabel": "Current skill level (1-5)",
+              "yLabel": "Needed skill level (1-5)",
+              "min": 1,
+              "max": 5,
+              "step": 1,
+              "scoringGroup": "culture"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pageId": "summary",
+      "title": "Summary / Print",
+      "isSummaryPage": true
+    }
+  ]
+}
