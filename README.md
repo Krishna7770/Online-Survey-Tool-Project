@@ -1,7 +1,9 @@
 -------------------------------Online Survey Tool - Phase 1 Developer Manual-------------------------------
 
 Project Title: Online Survey Tool (Phase 1)
+
 Author(s): Krishna Kumar Sah and Gandiv Koirala
+
 Goal of Phase 1: A dynamic browser-based survey app with live results and printable summary, powered by JSON (no backend)
 ________________________________________
 Table of Contents
