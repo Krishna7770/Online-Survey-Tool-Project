@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<body>
+<h2>Test Login</h2>
+<form id="loginForm">
+  Email <input type="text" id="email"><br><br>
+  Password <input type="password" id="password"><br><br>
+  <button type="button" onclick="send()">Send</button>
+</form>
+
+<script>
+function send() {
+  fetch("login.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: document.getElementById("email").value,
+      password: document.getElementById("password").value
+    })
+  })
+  .then(r => r.text())
+  .then(alert);
+}
+</script>
+</body>
+</html>

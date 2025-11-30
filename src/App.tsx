@@ -1,53 +1,113 @@
-// Import main styles and React utilities
-import './App.css'
-import { useState, useEffect } from 'react'
+import "./App.css";
+import { useState, useEffect } from "react";
 
-// Import page components
-import SurveyPage from './components/SurveyPage'
-import FinalSummaryPage from './components/FinalSummaryPage'
+import SurveyPage from "./components/SurveyPage";
+import FinalSummaryPage from "./components/FinalSummaryPage";
+import LoginPage from "./components/LoginPage";
+import RegisterPage from "./components/RegisterPage";
 
-// NEW: Import the survey loader hook
-import { useSurvey } from './hooks/useSurvey'
+import { useSurvey } from "./hooks/useSurvey";
 
-// ------------------- MAIN APP COMPONENT -------------------
-function App() {
-  // Load survey from PHP (qid = 1)
-  const { survey: surveyData, loading } = useSurvey(1)
+export default function App() {
+  // -----------------------------  
+  // 1. AUTH STATE HOOK
+  // -----------------------------
+  const [view, setView] = useState<string>(
+    localStorage.getItem("token") ? "survey" : "login"
+  );
 
-  // Track which page is active
-  const [currentPageId, setCurrentPageId] = useState<string>('')
+  // -----------------------------  
+  // 2. LOAD SURVEY HOOK
+  // -----------------------------
+  const { survey: surveyData, loading } = useSurvey(1);
 
-  // When surveyData loads AND currentPageId is empty → set first page automatically
+  // -----------------------------  
+  // 3. SURVEY PAGE HOOK
+  // Always define, even if login/register page is active
+  // -----------------------------
+  const [currentPageId, setCurrentPageId] = useState<string>("");
+
+  // When survey loads → set first page
   useEffect(() => {
-    if (surveyData && surveyData.pages && surveyData.pages.length > 0) {
+    if (surveyData && surveyData.pages.length > 0) {
       if (!currentPageId) {
-        setCurrentPageId(surveyData.pages[0].pageId)
+        setCurrentPageId(surveyData.pages[0].pageId);
       }
     }
-  }, [surveyData, currentPageId])
+  }, [surveyData, currentPageId]);
 
-  // Show loading screen until survey data arrives
-  if (loading || !surveyData) {
-    return <p>Loading survey...</p>
+  // -----------------------------
+  // LOGOUT
+  // -----------------------------
+  function handleLogout() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userid");
+    setView("login");
   }
 
-  // Find currently selected page
+  // -----------------------------
+  // NOW WE RENDER SCREENS SAFELY
+  // -----------------------------
+
+  // LOGIN SCREEN
+  if (view === "login") {
+    return (
+      <LoginPage
+        onLogin={(mode?: string) => {
+          if (mode === "register") setView("register");
+          else setView("survey");
+        }}
+      />
+    );
+  }
+
+  // REGISTER SCREEN
+  if (view === "register") {
+    return <RegisterPage onBack={() => setView("login")} />;
+  }
+
+  // SURVEY SCREEN
+  if (loading || !surveyData) {
+    return <p style={{ padding: "20px" }}>Loading survey...</p>;
+  }
+
   const currentPage = surveyData.pages.find(
     (p: any) => p.pageId === currentPageId
-  )
+  );
 
   return (
-    <div style={{ padding: '20px' }}>
-      {/* ------------------- SURVEY TITLE ------------------- */}
-      <h1>{surveyData.title}</h1>
-
-      {/* ------------------- NAVIGATION BAR ------------------- */}
+    <div style={{ padding: "20px" }}>
+      {/* HEADER */}
       <div
         style={{
-          display: 'flex',
-          gap: '10px',
-          marginBottom: '20px',
-          flexWrap: 'wrap',
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: "20px",
+        }}
+      >
+        <h1>{surveyData.title}</h1>
+        <button
+          onClick={handleLogout}
+          style={{
+            padding: "8px 14px",
+            background: "#dc3545",
+            color: "white",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+          }}
+        >
+          Logout
+        </button>
+      </div>
+
+      {/* NAVIGATION */}
+      <div
+        style={{
+          display: "flex",
+          gap: "10px",
+          marginBottom: "20px",
+          flexWrap: "wrap",
         }}
       >
         {surveyData.pages.map((page: any) => (
@@ -55,15 +115,15 @@ function App() {
             key={page.pageId}
             onClick={() => setCurrentPageId(page.pageId)}
             style={{
-              padding: '8px 14px',
-              borderRadius: '8px',
+              padding: "8px 14px",
+              borderRadius: "8px",
               border:
                 currentPageId === page.pageId
-                  ? '2px solid #007bff'
-                  : '1px solid #ccc',
+                  ? "2px solid #007bff"
+                  : "1px solid #ccc",
               backgroundColor:
-                currentPageId === page.pageId ? '#e0f0ff' : '#f9f9f9',
-              cursor: 'pointer',
+                currentPageId === page.pageId ? "#e0f0ff" : "#f9f9f9",
+              cursor: "pointer",
             }}
           >
             {page.title}
@@ -71,7 +131,7 @@ function App() {
         ))}
       </div>
 
-      {/* ------------------- PAGE CONTENT ------------------- */}
+      {/* SURVEY CONTENT */}
       {currentPage ? (
         currentPage.isSummaryPage ? (
           <FinalSummaryPage />
@@ -82,7 +142,5 @@ function App() {
         <p>Page not found.</p>
       )}
     </div>
-  )
+  );
 }
-
-export default App
