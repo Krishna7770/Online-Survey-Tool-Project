@@ -1,44 +1,40 @@
 // Import main styles and React utilities
 import './App.css'
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 
 // Import page components
 import SurveyPage from './components/SurveyPage'
 import FinalSummaryPage from './components/FinalSummaryPage'
 
+// NEW: Import the survey loader hook
+import { useSurvey } from './hooks/useSurvey'
+
 // ------------------- MAIN APP COMPONENT -------------------
 function App() {
-  // This will store the entire survey data loaded from JSON
-  const [surveyData, setSurveyData] = useState<any | null>(null)
+  // Load survey from PHP (qid = 1)
+  const { survey: surveyData, loading } = useSurvey(1)
 
-  // This keeps track of which page (tab) is currently open
-  const [currentPageId, setCurrentPageId] = useState<string>('') // new state added
+  // Track which page is active
+  const [currentPageId, setCurrentPageId] = useState<string>('')
 
-  // ------------------- FETCH JSON FROM PUBLIC FOLDER -------------------
-  // Instead of importing the JSON directly (which was inside src),
-  // now we will load it dynamically from the public folder using fetch().
-  // This change also prepares us for Phase 2 where data will come from PHP.
+  // When surveyData loads AND currentPageId is empty → set first page automatically
   useEffect(() => {
-    fetch('/surveyConfig.json')
-      .then((res) => res.json())
-      .then((data) => {
-        setSurveyData(data)
-        // When data loads, automatically set the first page as current
-        if (data.pages && data.pages.length > 0) {
-          setCurrentPageId(data.pages[0].pageId)
-        }
-      })
-      .catch((err) => console.error('Error loading survey JSON:', err))
-  }, [])
+    if (surveyData && surveyData.pages && surveyData.pages.length > 0) {
+      if (!currentPageId) {
+        setCurrentPageId(surveyData.pages[0].pageId)
+      }
+    }
+  }, [surveyData, currentPageId])
 
-  // ------------------- SAFETY CHECK -------------------
-  // If data hasn’t loaded yet, show a simple loading message.
-  if (!surveyData) {
+  // Show loading screen until survey data arrives
+  if (loading || !surveyData) {
     return <p>Loading survey...</p>
   }
 
-  // Find the currently selected page object from the survey data
-  const currentPage = surveyData.pages.find((p: any) => p.pageId === currentPageId)
+  // Find currently selected page
+  const currentPage = surveyData.pages.find(
+    (p: any) => p.pageId === currentPageId
+  )
 
   return (
     <div style={{ padding: '20px' }}>
@@ -54,11 +50,10 @@ function App() {
           flexWrap: 'wrap',
         }}
       >
-        {/* Loop through each page and create a button for navigation */}
         {surveyData.pages.map((page: any) => (
           <button
             key={page.pageId}
-            onClick={() => setCurrentPageId(page.pageId)} // switch to selected page
+            onClick={() => setCurrentPageId(page.pageId)}
             style={{
               padding: '8px 14px',
               borderRadius: '8px',
@@ -77,10 +72,6 @@ function App() {
       </div>
 
       {/* ------------------- PAGE CONTENT ------------------- */}
-      {/* Show either:
-          1. A survey question page (SurveyPage)
-          2. Or the final summary page (FinalSummaryPage)
-      */}
       {currentPage ? (
         currentPage.isSummaryPage ? (
           <FinalSummaryPage />
