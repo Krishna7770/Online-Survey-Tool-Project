@@ -17,6 +17,58 @@ const SurveyPage: React.FC<SurveyPageProps> = ({
   isFirst,
   isLast,
 }) => {
+  const { answers } = useSurvey();
+
+  // Called when user clicks "Submit Survey" on the last page
+  async function handleSubmit() {
+    const useridStr = localStorage.getItem("userid");
+    const userid = useridStr ? parseInt(useridStr, 10) : 0;
+
+    if (!userid) {
+      alert("You are not logged in. Please login again.");
+      return;
+    }
+
+    try {
+      const payload = {
+        qid: 1, // questionnaire id in DB
+        userid,
+        answers: Object.entries(answers).map(([questionId, value]) => ({
+          questionId,
+          value,
+        })),
+      };
+
+      const res = await fetch(
+        "http://localhost/online-survey-api/submitSurvey.php",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const data = await res.json();
+
+      if (data.success) {
+        alert("Thank you! Your answers have been saved.");
+
+        // If there is a summary page, go there
+        if (onNext) {
+          onNext();
+        }
+      } else {
+        alert(
+          "Saving failed: " +
+            (data.error || "Unknown error from server. Please try again.")
+        );
+      }
+    } catch (err) {
+      console.error("Submit error:", err);
+      alert("Network error while saving. Please try again.");
+    }
+  }
+
   return (
     <div style={styles.container}>
       <div style={styles.card}>
@@ -24,9 +76,7 @@ const SurveyPage: React.FC<SurveyPageProps> = ({
         <h2 style={styles.pageTitle}>{page.title}</h2>
 
         {/* Intro */}
-        {page.introText && (
-          <p style={styles.intro}>{page.introText}</p>
-        )}
+        {page.introText && <p style={styles.intro}>{page.introText}</p>}
 
         {/* Categories */}
         {page.categories.map((cat: any) => (
@@ -59,7 +109,7 @@ const SurveyPage: React.FC<SurveyPageProps> = ({
           )}
 
           {isLast && (
-            <button style={styles.submitButton} onClick={() => alert("Submit coming soon!")}>
+            <button style={styles.submitButton} onClick={handleSubmit}>
               Submit Survey
             </button>
           )}

@@ -9,47 +9,31 @@ import RegisterPage from "./components/RegisterPage";
 import { useSurvey } from "./hooks/useSurvey";
 
 export default function App() {
-  // -----------------------------  
-  // 1. AUTH STATE HOOK
-  // -----------------------------
+  // 1. AUTH STATE
   const [view, setView] = useState<string>(
     localStorage.getItem("token") ? "survey" : "login"
   );
 
-  // -----------------------------  
-  // 2. LOAD SURVEY HOOK
-  // -----------------------------
+  // 2. LOAD SURVEY FROM BACKEND (qid = 1)
   const { survey: surveyData, loading } = useSurvey(1);
 
-  // -----------------------------  
-  // 3. SURVEY PAGE HOOK
-  // Always define, even if login/register page is active
-  // -----------------------------
-  const [currentPageId, setCurrentPageId] = useState<string>("");
+  // 3. CURRENT PAGE INDEX
+  const [currentPageIndex, setCurrentPageIndex] = useState(0);
 
-  // When survey loads → set first page
+  // When survey loads → go to first page
   useEffect(() => {
-    if (surveyData && surveyData.pages.length > 0) {
-      if (!currentPageId) {
-        setCurrentPageId(surveyData.pages[0].pageId);
-      }
+    if (surveyData && surveyData.pages && surveyData.pages.length > 0) {
+      setCurrentPageIndex(0);
     }
-  }, [surveyData, currentPageId]);
+  }, [surveyData]);
 
-  // -----------------------------
-  // LOGOUT
-  // -----------------------------
   function handleLogout() {
     localStorage.removeItem("token");
     localStorage.removeItem("userid");
     setView("login");
   }
 
-  // -----------------------------
-  // NOW WE RENDER SCREENS SAFELY
-  // -----------------------------
-
-  // LOGIN SCREEN
+  // LOGIN
   if (view === "login") {
     return (
       <LoginPage
@@ -61,19 +45,36 @@ export default function App() {
     );
   }
 
-  // REGISTER SCREEN
+  // REGISTER
   if (view === "register") {
     return <RegisterPage onBack={() => setView("login")} />;
   }
 
-  // SURVEY SCREEN
-  if (loading || !surveyData) {
+  // SURVEY
+  if (loading || !surveyData || !surveyData.pages) {
     return <p style={{ padding: "20px" }}>Loading survey...</p>;
   }
 
-  const currentPage = surveyData.pages.find(
-    (p: any) => p.pageId === currentPageId
-  );
+  const pages = surveyData.pages;
+  const hasSummaryPage =
+    pages.length > 0 && pages[pages.length - 1].isSummaryPage;
+  const lastSurveyPageIndex = hasSummaryPage
+    ? Math.max(0, pages.length - 2)
+    : pages.length - 1;
+
+  const currentPage = pages[currentPageIndex];
+
+  const goNext = () => {
+    if (currentPageIndex < pages.length - 1) {
+      setCurrentPageIndex(currentPageIndex + 1);
+    }
+  };
+
+  const goPrev = () => {
+    if (currentPageIndex > 0) {
+      setCurrentPageIndex(currentPageIndex - 1);
+    }
+  };
 
   return (
     <div style={{ padding: "20px" }}>
@@ -101,7 +102,7 @@ export default function App() {
         </button>
       </div>
 
-      {/* NAVIGATION */}
+      {/* TOP PAGE NAVIGATION (buttons for each page) */}
       <div
         style={{
           display: "flex",
@@ -110,19 +111,19 @@ export default function App() {
           flexWrap: "wrap",
         }}
       >
-        {surveyData.pages.map((page: any) => (
+        {pages.map((page: any, index: number) => (
           <button
             key={page.pageId}
-            onClick={() => setCurrentPageId(page.pageId)}
+            onClick={() => setCurrentPageIndex(index)}
             style={{
               padding: "8px 14px",
               borderRadius: "8px",
               border:
-                currentPageId === page.pageId
+                currentPageIndex === index
                   ? "2px solid #007bff"
                   : "1px solid #ccc",
               backgroundColor:
-                currentPageId === page.pageId ? "#e0f0ff" : "#f9f9f9",
+                currentPageIndex === index ? "#e0f0ff" : "#f9f9f9",
               cursor: "pointer",
             }}
           >
@@ -131,15 +132,17 @@ export default function App() {
         ))}
       </div>
 
-      {/* SURVEY CONTENT */}
-      {currentPage ? (
-        currentPage.isSummaryPage ? (
-          <FinalSummaryPage />
-        ) : (
-          <SurveyPage page={currentPage} />
-        )
+      {/* PAGE CONTENT */}
+      {currentPage.isSummaryPage ? (
+        <FinalSummaryPage />
       ) : (
-        <p>Page not found.</p>
+        <SurveyPage
+          page={currentPage}
+          onNext={goNext}
+          onPrev={goPrev}
+          isFirst={currentPageIndex === 0}
+          isLast={currentPageIndex === lastSurveyPageIndex}
+        />
       )}
     </div>
   );
