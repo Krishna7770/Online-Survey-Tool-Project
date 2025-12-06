@@ -9,18 +9,20 @@ import RegisterPage from "./components/RegisterPage";
 import { useSurvey } from "./hooks/useSurvey";
 
 export default function App() {
-  // 1. AUTH STATE
+  // -----------------------------
+  // LOGIN / REGISTER / SURVEY SWITCH
+  // -----------------------------
   const [view, setView] = useState<string>(
     localStorage.getItem("token") ? "survey" : "login"
   );
 
-  // 2. LOAD SURVEY FROM BACKEND (qid = 1)
+  // Load survey pages from backend
   const { survey: surveyData, loading } = useSurvey(1);
 
-  // 3. CURRENT PAGE INDEX
+  // Current page index
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
 
-  // When survey loads → go to first page
+  // When survey loads, go to page 0
   useEffect(() => {
     if (surveyData && surveyData.pages && surveyData.pages.length > 0) {
       setCurrentPageIndex(0);
@@ -33,7 +35,9 @@ export default function App() {
     setView("login");
   }
 
-  // LOGIN
+  // -----------------------------
+  // LOGIN SCREEN
+  // -----------------------------
   if (view === "login") {
     return (
       <LoginPage
@@ -45,24 +49,31 @@ export default function App() {
     );
   }
 
-  // REGISTER
+  // REGISTER SCREEN
   if (view === "register") {
     return <RegisterPage onBack={() => setView("login")} />;
   }
 
-  // SURVEY
+  // -----------------------------
+  // SURVEY SCREEN
+  // -----------------------------
   if (loading || !surveyData || !surveyData.pages) {
     return <p style={{ padding: "20px" }}>Loading survey...</p>;
   }
 
-  const pages = surveyData.pages;
-  const hasSummaryPage =
-    pages.length > 0 && pages[pages.length - 1].isSummaryPage;
-  const lastSurveyPageIndex = hasSummaryPage
-    ? Math.max(0, pages.length - 2)
-    : pages.length - 1;
+  // Inject a summary page at the end automatically
+  const pages = [
+    ...surveyData.pages,
+    {
+      pageId: "summary",
+      title: "Summary / Download",
+      isSummaryPage: true,
+    },
+  ];
 
   const currentPage = pages[currentPageIndex];
+
+  const lastSurveyPageIndex = pages.length - 2; // last before summary
 
   const goNext = () => {
     if (currentPageIndex < pages.length - 1) {
@@ -102,7 +113,7 @@ export default function App() {
         </button>
       </div>
 
-      {/* TOP PAGE NAVIGATION (buttons for each page) */}
+      {/* TOP PAGE BUTTONS */}
       <div
         style={{
           display: "flex",

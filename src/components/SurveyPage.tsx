@@ -19,7 +19,6 @@ const SurveyPage: React.FC<SurveyPageProps> = ({
 }) => {
   const { answers } = useSurvey();
 
-  // Called when user clicks "Submit Survey" on the last page
   async function handleSubmit() {
     const useridStr = localStorage.getItem("userid");
     const userid = useridStr ? parseInt(useridStr, 10) : 0;
@@ -31,7 +30,7 @@ const SurveyPage: React.FC<SurveyPageProps> = ({
 
     try {
       const payload = {
-        qid: 1, // questionnaire id in DB
+        qid: 1,
         userid,
         answers: Object.entries(answers).map(([questionId, value]) => ({
           questionId,
@@ -52,16 +51,9 @@ const SurveyPage: React.FC<SurveyPageProps> = ({
 
       if (data.success) {
         alert("Thank you! Your answers have been saved.");
-
-        // If there is a summary page, go there
-        if (onNext) {
-          onNext();
-        }
+        if (onNext) onNext(); // Go to Summary page
       } else {
-        alert(
-          "Saving failed: " +
-            (data.error || "Unknown error from server. Please try again.")
-        );
+        alert("Saving failed: " + (data.error || "Unknown error"));
       }
     } catch (err) {
       console.error("Submit error:", err);
@@ -72,18 +64,14 @@ const SurveyPage: React.FC<SurveyPageProps> = ({
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        {/* Page Title */}
         <h2 style={styles.pageTitle}>{page.title}</h2>
 
-        {/* Intro */}
         {page.introText && <p style={styles.intro}>{page.introText}</p>}
 
-        {/* Categories */}
         {page.categories.map((cat: any) => (
           <div key={cat.categoryId} style={styles.category}>
             <h3 style={styles.categoryTitle}>{cat.title}</h3>
 
-            {/* Questions inside category */}
             <div style={styles.questionsContainer}>
               {cat.questions.map((q: any) => (
                 <div key={q.questionId} style={styles.questionBlock}>
@@ -94,7 +82,6 @@ const SurveyPage: React.FC<SurveyPageProps> = ({
           </div>
         ))}
 
-        {/* Navigation Buttons */}
         <div style={styles.navButtons}>
           {!isFirst && (
             <button style={styles.prevButton} onClick={onPrev}>
@@ -121,9 +108,7 @@ const SurveyPage: React.FC<SurveyPageProps> = ({
 
 export default SurveyPage;
 
-// ---------------------
-// Modern UI Styles
-// ---------------------
+// --- Styles same as before ---
 const styles: Record<string, React.CSSProperties> = {
   container: {
     width: "100%",
@@ -131,7 +116,6 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: "center",
     marginTop: "20px",
   },
-
   card: {
     width: "90%",
     maxWidth: "1050px",
@@ -139,90 +123,58 @@ const styles: Record<string, React.CSSProperties> = {
     padding: "45px",
     borderRadius: "20px",
     boxShadow: "0 12px 35px rgba(0,0,0,0.15)",
-    border: "1px solid rgba(255,255,255,0.6)",
   },
-
   pageTitle: {
     fontSize: "30px",
+    textAlign: "center",
     marginBottom: "15px",
-    textAlign: "center",
-    fontWeight: 650,
-    color: "#222",
   },
-
   intro: {
-    marginBottom: "30px",
-    fontSize: "17px",
-    color: "#555",
     textAlign: "center",
+    marginBottom: "25px",
+    color: "#666",
   },
-
   category: {
-    marginBottom: "45px",
-    padding: "20px 25px",
-    background: "rgba(250,250,255,0.8)",
-    borderRadius: "14px",
-    border: "1px solid #e6e6f0",
+    marginBottom: "40px",
+    padding: "20px",
+    background: "#f5f6fa",
+    borderRadius: "12px",
   },
-
   categoryTitle: {
     fontSize: "24px",
-    marginBottom: "22px",
-    paddingBottom: "8px",
-    borderBottom: "2px solid #d5d5e0",
-    color: "#333",
-    fontWeight: 600,
+    marginBottom: "15px",
   },
-
-  questionsContainer: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "22px",
-  },
-
+  questionsContainer: { display: "flex", flexDirection: "column", gap: "20px" },
   questionBlock: {
-    padding: "18px 20px",
+    padding: "15px",
+    background: "white",
     borderRadius: "10px",
-    background: "#f5f6fa",
     border: "1px solid #ddd",
   },
-
   navButtons: {
-    marginTop: "40px",
+    marginTop: "30px",
     display: "flex",
     justifyContent: "space-between",
   },
-
   prevButton: {
     padding: "12px 20px",
     background: "#bfc4cc",
     color: "white",
     borderRadius: "12px",
     border: "none",
-    fontSize: "17px",
-    cursor: "pointer",
-    fontWeight: 500,
   },
-
   nextButton: {
     padding: "12px 22px",
     background: "#4b7bec",
     color: "white",
     borderRadius: "12px",
     border: "none",
-    fontSize: "17px",
-    cursor: "pointer",
-    fontWeight: 500,
   },
-
   submitButton: {
     padding: "12px 22px",
     background: "#20bf6b",
     color: "white",
     borderRadius: "12px",
     border: "none",
-    fontSize: "17px",
-    cursor: "pointer",
-    fontWeight: 600,
   },
 };
